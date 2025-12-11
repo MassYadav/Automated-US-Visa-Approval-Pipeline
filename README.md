@@ -1,126 +1,147 @@
-# 🚀 US Visa Approval Prediction — End-to-End ML Pipeline  
-FastAPI | Docker | MongoDB | AWS EC2/ECR | CI/CD | Evidently Monitoring
+# 🚀 US Visa Approval Prediction — End-to-End Production ML System  
+FastAPI | Docker | Kubernetes (HPA) | AWS EC2/ECR | CI/CD | Evidently | MongoDB
 
 ---
 
 ## 🧩 1. Problem Statement  
-This project predicts whether a US visa application will be **approved or rejected** based on structured applicant features.  
-It includes a **production-ready ML pipeline** with:
+This project predicts whether a US visa application will be **approved or rejected** using structured applicant features.  
+It includes a **full production-grade ML system**:
 
-- Data ingestion → validation → transformation  
-- Model training + evaluation  
-- FastAPI inference API  
-- Docker containerization  
-- CI/CD with GitHub Actions  
-- AWS EC2 + ECR deployment  
-- Monitoring with Evidently  
-- MongoDB as backend storage  
+- End-to-end ML pipeline (ingestion → validation → transformation → training → evaluation)
+- FastAPI inference microservice
+- Docker containerization
+- Kubernetes deployment with **Horizontal Pod Autoscaler (HPA)**
+- CI/CD for automated build → push → deploy
+- AWS EC2 + ECR hosting
+- MongoDB backend
+- Evidently monitoring for drift detection
 
 ---
 
 ## 📁 2. Folder Structure  
 ```bash
 .
-├── .github/                     # CI/CD workflows (GitHub Actions)
-│   └── workflows/
-├── cloud_storage/               # Cloud/S3 helper functions
+├── k8s/                         # Kubernetes manifests (Deployment, Service, Namespace, HPA)
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   ├── namespace.yaml
+│   └── hpa.yaml
+├── .github/
+│   └── workflows/               # (Optional) GitHub Actions workflow for CI/CD
+├── cloud_storage/               # Cloud utilities (S3)
 ├── components/                  # Modular ML components
 ├── config/                      # YAML configuration files
-│   ├── model.yaml
-│   └── schema.yaml
 ├── constants/                   # Global constants
-├── data_access/                 # Data access layer (DB/Storage)
-├── entity/                      # Entity classes (config + artifacts)
-├── exception/                   # Custom exception handling
-├── flowcharts/                  # Architecture & pipeline diagrams
+├── data_access/                 # MongoDB / storage access
+├── entity/                      # Config & artifact entity classes
+├── exception/                   # Custom exception handler
+├── flowcharts/                  # Architecture diagrams
 ├── logger/                      # Logging module
-├── notebook/                    # Jupyter notebooks (EDA/Training)
+├── notebook/                    # Jupyter notebooks (EDA/training)
 ├── pipline/                     # Training + prediction pipelines
 │   ├── training_pipeline.py
 │   └── prediction_pipeline.py
-├── static/                      # Static files (CSS, JS)
-├── templates/                   # HTML templates (FastAPI/Jinja2)
-├── us_visa/                     # Main package code
-│   ├── components/
-│   ├── configuration/
-│   ├── constants/
-│   ├── entity/
-│   ├── exception/
-│   ├── logger/
-│   ├── pipline/
-│   └── utils/
-├── .dockerignore
-├── .gitignore
-├── Dockerfile
-├── LICENSE
-├── README.md
-├── app.py                       # FastAPI application
-├── demo.py
+├── static/                      # CSS / JS files
+├── templates/                   # Jinja2 HTML templates
+├── us_visa/                     # Core ML package
+├── Dockerfile                   # Production dockerfile (Uvicorn + FastAPI)
+├── app.py                       # FastAPI application (with /health endpoint)
 ├── requirements.txt
 ├── setup.py
-└── template.py
+└── README.md
 
-# ⚙️ 3. Workflow (High-Level)
-constants → entity → components → pipeline → app.py → AWS deployment
+⚙️ 3. High-Level Workflow 
 
-
-
-# 🔧 5. How to Run Locally
+constants → entity → components → pipeline → FastAPI → Docker → Kubernetes(HPA) → AWS Deployment
 
 
+🌐 4. FastAPI Endpoints
+GET /
+
+Train Model
+GET /train
+
+Predict Visa Approval
+POST /
+
+Kubernetes Health Endpoint (Required)
+GET /health
+
+🔧 5. Run Project Locally
 Create Conda Environment
+
 conda create -n visa python=3.8 -y
 conda activate visa
 
-## Install Dependencies
+
+Install Dependencies
 pip install -r requirements.txt
 
-## Set Environment Variables
-
+Export Environment Variables
 export MONGODB_URL="mongodb+srv://<username>:<password>..."
 export AWS_ACCESS_KEY_ID=<KEY>
 export AWS_SECRET_ACCESS_KEY=<SECRET>
 
-## Run FastAPI
-python app.py
+Run API with Uvicorn
+uvicorn app:app --host 0.0.0.0 --port 8080
 
-## Swagger UI:
-http://54.147.165.235:8080/
+Swagger UI
+http://localhost:8080/docs
 
-## 🐳 6. Docker Commands
-# Build Image
-
+🐳 6. Docker Usage
+Build Image
 docker build -t visa-app .
 
-## ☁️ 7. AWS Deployment (EC2 + ECR + CI/CD)
-# Required IAM Permissions
+Run Container
+docker run -p 8080:8080 visa-app
+
+☸️ 7. Kubernetes Deployment (HPA Enabled)
+Apply Manifests
+kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+kubectl apply -f k8s/hpa.yaml
+
+Verify Resources
+kubectl get pods -n visa-system
+kubectl get svc -n visa-system
+kubectl get hpa -n visa-system
+
+HPA Requirements
+
+Install Metrics Server:
+
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+☁️ 8. AWS Deployment (EC2 + ECR + CI/CD)
+Required IAM Permissions
 
 AmazonEC2FullAccess
 
 AmazonEC2ContainerRegistryFullAccess
 
-# Create ECR Repo 
+Create ECR Repo
 315865595366.dkr.ecr.us-east-1.amazonaws.com/visarepo
 
-## Install Docker on EC2
-sudo apt-get update -y
-sudo apt-get upgrade -y
+Install Docker on EC2
+sudo apt update -y
+sudo apt upgrade -y
 curl -fsSL https://get.docker.com -o get-docker.sh
 sudo sh get-docker.sh
 sudo usermod -aG docker ubuntu
 newgrp docker
 
-## Add EC2 as Self-Hosted Runner
+Add EC2 as Self-Hosted Runner
 
 GitHub → Settings → Actions → Runners → Add Runner
 
-## Add GitHub Secrets
+Add GitHub Secrets
 AWS_ACCESS_KEY_ID
 AWS_SECRET_ACCESS_KEY
 AWS_DEFAULT_REGION
 ECR_REPO
 
-## CI/CD Pipeline Does
+CI/CD Pipeline Performs:
 
 Build Docker image
 
@@ -128,29 +149,34 @@ Push to ECR
 
 SSH into EC2
 
-Pull + Run container
+Pull + run container
 
-# 🔄 8. Git Commands
+Restart service on new image
+
+📊 9. Monitoring with Evidently
+
+Tracks:
+
+Data drift
+
+Model drift
+
+Feature distribution changes
+
+Model performance decay
+
+Great for real-time ML monitoring systems.
+
+🔄 10. Git Commands
 git add .
-git commit -m "Updated"
+git commit -m "Updated K8s deployment + Docker + app config"
 git push origin main
 
-## 📊 9. Monitoring (Evidently)
+🔗 11. Important Links
 
-# Evidently monitors:
+GitHub Repo:
+https://github.com/MassYadav/End-to-End-US-Visa-Approval-System
 
-- Data drift
-
-- Model drift
-
-- Feature distribution
-
-Great for production ML monitoring.
-
-🔗 10. Project Links
-GitHub Repo: <https://github.com/MassYadav/End-to-End-US-Visa-Approval-System>
-Live Demo: <http://54.147.165.235:8080/>
-
-## project work will done 
-
+Live Demo:
+http://54.147.165.235:8080
 
