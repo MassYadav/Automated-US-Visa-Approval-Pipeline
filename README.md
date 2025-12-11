@@ -239,4 +239,24 @@ kubectl delete -f k8s/
 minikube stop
 minikube delete
 
+---
+
+## 📸 Deployment & Scaling Screenshots (Kubernetes + HPA)
+
+### 1️⃣ Kubernetes Dashboard
+![Kubernetes Dashboard](/images/k8s-dashboard.png)
+
+### 2️⃣ FastAPI UI Running in Minikube
+![Visa UI](/images/visa-ui.png)
+
+### 3️⃣ Horizontal Pod Autoscaler (HPA) Scaling Pods
+![HPA Scaling](/images/hpa-scaling.png)
+
+### 4️⃣ Running Pods After Scaling
+![Pods Running](/images/pods-running.png)
+
+### 5️⃣ Docker Desktop Containers
+![Docker Desktop](/images/docker-desktop.png)
+
+
 
