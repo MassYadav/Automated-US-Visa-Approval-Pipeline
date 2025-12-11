@@ -17,8 +17,8 @@ spec:
     spec:
       containers:
       - name: visa-ml-api
-        image: your-dockerhub-masssyadav/visa-ml:latest
-        imagePullPolicy: Always
+        image: masssyadav/visa-ml:latest
+        imagePullPolicy: Never
         ports:
         - containerPort: 8080
         resources:

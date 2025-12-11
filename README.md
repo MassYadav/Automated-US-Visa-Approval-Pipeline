@@ -178,5 +178,65 @@ GitHub Repo:
 https://github.com/MassYadav/End-to-End-US-Visa-Approval-System
 
 Live Demo:
-http://54.147.165.235:8080
+http://127.0.0.1:64608 # k8n
+
+http://54.147.165.235:8080 # aws
+
+
+# 🚀 Kubernetes Deployment (Minikube + HPA)
+
+# 1️⃣ Start Kubernetes Cluster
+minikube start --driver=docker --cpus=4 --memory=8192
+
+# 2️⃣ Verify Cluster
+minikube status
+kubectl get nodes
+kubectl cluster-info
+
+# 3️⃣ Enable Metrics Server (required for HPA)
+minikube addons enable metrics-server
+kubectl get deployment metrics-server -n kube-system
+kubectl get pods -n kube-system
+
+# 4️⃣ Use Minikube Docker Daemon
+minikube -p minikube docker-env | Invoke-Expression
+
+# 5️⃣ Build Docker Image INSIDE Minikube
+docker build -t masssyadav/visa-ml:latest .
+# OR load an already-built image:
+# minikube image load masssyadav/visa-ml:latest
+
+# 6️⃣ Apply Kubernetes Manifests
+kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+kubectl apply -f k8s/hpa.yaml
+
+# 7️⃣ Verify Pods, Service, and HPA
+kubectl get pods -n visa-system
+kubectl get svc -n visa-system
+kubectl get hpa -n visa-system
+
+# 8️⃣ Get External Service URL
+minikube service visa-ml-service -n visa-system --url
+
+# 9️⃣ (Optional) Restart Pods After Updating Image
+kubectl rollout restart deployment/visa-ml-api -n visa-system
+# OR force delete all pods
+kubectl delete pod -n visa-system --all
+
+# 🔟 (Optional) Test HPA Scaling (CPU Load Generator)
+kubectl run -n visa-system load-generator --image=busybox --restart=Never -- \
+  /bin/sh -c "while true; do dd if=/dev/zero of=/dev/null bs=1M count=1024; done"
+
+kubectl get hpa -n visa-system -w
+
+# Cleanup load generator
+kubectl delete pod load-generator -n visa-system
+
+# 1️⃣1️⃣ (Optional) Remove All K8s Resources
+kubectl delete -f k8s/
+minikube stop
+minikube delete
+
 
